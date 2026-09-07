@@ -922,3 +922,63 @@ window.saveCompanySettings = saveCompanySettings;
 window.zoomIn = zoomIn;
 window.zoomOut = zoomOut;
 window.zoomFit = zoomFit;
+
+// =========================================================
+// BẢO VỆ MÃ NGUỒN: Chặn Ctrl+U, Ctrl+I, F12, chuột phải...
+// =========================================================
+(function() {
+    // 1. Chặn menu chuột phải (Không cho Inspect / Xem nguồn)
+    document.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        return false;
+    });
+
+    // 2. Chặn các tổ hợp phím tắt kiểm tra mã nguồn
+    window.addEventListener("keydown", (e) => {
+        const key = (e.key || "").toLowerCase();
+        const ctrlOrCmd = e.ctrlKey || e.metaKey;
+
+        // F12 (Mở DevTools)
+        if (e.key === "F12" || e.keyCode === 123) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+
+        // Ctrl + U (Xem nguồn trang)
+        if (ctrlOrCmd && key === "u") {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+
+        // Ctrl + I hoặc Ctrl + Shift + I (Mở DevTools Element)
+        if (ctrlOrCmd && key === "i") {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+
+        // Ctrl + Shift + J (Mở DevTools Console)
+        if (ctrlOrCmd && e.shiftKey && key === "j") {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+
+        // Ctrl + Shift + C (Chọn phần tử kiểm tra)
+        if (ctrlOrCmd && e.shiftKey && key === "c") {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+
+        // Ctrl + S (Chặn lưu mã nguồn HTML)
+        if (ctrlOrCmd && key === "s") {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }, true);
+})();
+
