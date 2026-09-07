@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý và Xuất Phiếu Lương - Mộc Đông Châu</title>
+    <meta name="description" content="Hệ thống quản lý, in ấn phiếu lương A4 và xuất file chuyển khoản ngân hàng tự động cho doanh nghiệp.">
+    <!-- Flaticon UIcons CDN (Chuẩn thư viện biểu tượng Flaticon) -->
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/print.css">
+</head>
+<body>
+    <!-- 1. TOP HEADER -->
+    <header class="main-header">
+        <div class="header-left">
+            <div class="company-title">
+                <span id="headerCompanyTitle">CÔNG TY TNHH MTV SẢN XUẤT VÀ THƯƠNG MẠI MỘC ĐÔNG CHÂU</span>
+                <button class="btn btn-header btn-sm no-print" onclick="window.openCompanySettingsModal()" title="Cài đặt thông tin công ty">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Cấu hình
+                </button>
+            </div>
+            <div class="header-meta" id="headerMetaInfo">
+                <span>Bảng lương tháng 08/2026</span>
+                <span class="separator">•</span>
+                <span>Ngày chi trả: 05/09/2026</span>
+                <span class="separator">•</span>
+                <span id="headerStandardDays">Ngày công chuẩn: 26 ngày</span>
+            </div>
+        </div>
+        <div class="header-right no-print">
+            <button class="btn btn-header" id="btnOpenImportModal" onclick="window.openImportModal()">
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Nạp bảng lương tháng mới
+            </button>
+            <button class="btn btn-header" id="btnOpenBankModal" onclick="window.openBankExportModal()">
+                <svg class="icon-svg" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg> Xuất file chuyển khoản (TXT)
+            </button>
+        </div>
+    </header>
+
+    <!-- 2. THANH 6 BẢNG THỐNG KÊ NHỎ (KPI WIDGETS DƯỚI HEADER) -->
+    <section class="kpi-top-bar no-print" id="kpiTopBar">
+        <div class="kpi-top-card">
+            <div class="kpi-top-label">QUỸ LƯƠNG</div>
+            <div class="kpi-top-val" id="topKpiGross">0 đ</div>
+            <div class="kpi-top-sub">Thu nhập trước khấu trừ</div>
+        </div>
+        <div class="kpi-top-card">
+            <div class="kpi-top-label">TỔNG BẢO HIỂM</div>
+            <div class="kpi-top-val" id="topKpiInsurance" style="color: #c2410c;">0 đ</div>
+            <div class="kpi-top-sub" id="topKpiInsuranceSub">Trích nộp theo từng người</div>
+        </div>
+        <div class="kpi-top-card clickable-kpi" id="kpiCardTax" onclick="window.toggleTaxFilter()" title="Bấm vào đây để lọc danh sách những người phát sinh thuế TNCN" style="cursor: pointer;">
+            <div class="kpi-top-label" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>TỔNG THUẾ TNCN</span>
+                <span id="taxFilterBadge" style="font-size: 9px; background: #fee2e2; color: #b91c1c; padding: 1px 5px; border-radius: 3px; display: none; font-weight: 700;">ĐANG LỌC</span>
+            </div>
+            <div class="kpi-top-val" id="topKpiTax" style="color: #b91c1c;">0 đ</div>
+            <div class="kpi-top-sub" id="topKpiTaxCount">41 người phát sinh thuế (Bấm để xem)</div>
+        </div>
+        <div class="kpi-top-card">
+            <div class="kpi-top-label">TỔNG KHẤU TRỪ</div>
+            <div class="kpi-top-val" id="topKpiDeduction">0 đ</div>
+            <div class="kpi-top-sub">BH + thuế + tạm ứng + đoàn phí</div>
+        </div>
+        <div class="kpi-top-card highlight-net">
+            <div class="kpi-top-label">TỔNG THỰC LĨNH</div>
+            <div class="kpi-top-val" id="topKpiNet">0 đ</div>
+            <div class="kpi-top-sub" id="topKpiAvgNet">Bình quân 20.704.990 đ/người</div>
+        </div>
+        <div class="kpi-top-card">
+            <div class="kpi-top-label">TỔNG SỐ NGƯỜI</div>
+            <div class="kpi-top-val" id="topKpiHeadcount">48</div>
+            <div class="kpi-top-sub" id="topKpiDeptCount">7 bộ phận</div>
+        </div>
+    </section>
+
+    <!-- 2. MAIN APPLICATION LAYOUT -->
+    <div class="app-layout">
+        <!-- SIDEBAR (Danh sách nhân viên) -->
+        <aside class="sidebar no-print">
+            <div class="sidebar-filters">
+                <div class="search-box">
+                    <span class="search-icon">
+                        <svg class="icon-svg" viewBox="0 0 24 24" style="color: #64748b;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </span>
+                    <input type="text" id="searchInput" placeholder="Số, tên hoặc mã NV..." autocomplete="off">
+                </div>
+                <div class="filter-row">
+                    <select id="deptFilter" class="filter-select">
+                        <option value="Tất cả bộ phận">Tất cả bộ phận</option>
+                    </select>
+                    <select id="sortSelect" class="filter-select">
+                        <option value="stt">Sắp xếp: STT</option>
+                        <option value="name">Sắp xếp: Tên A-Z</option>
+                        <option value="id">Sắp xếp: Mã NV</option>
+                        <option value="net-desc">Lương: Cao ➔ Thấp</option>
+                        <option value="net-asc">Lương: Thấp ➔ Cao</option>
+                        <option value="tax-desc">Thuế TNCN: Cao ➔ Thấp</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="sidebar-stats">
+                <span class="stat-count" id="sidebarSummaryCount">48/48 người</span>
+                <span class="stat-sep">•</span>
+                <span class="stat-label">Thực lĩnh nhóm:</span>
+                <span class="amount-total" id="sidebarSummaryTotal">... đ</span>
+            </div>
+
+            <div class="employee-list" id="employeeList">
+                <!-- Danh sách thẻ nhân viên được sinh tự động bởi JavaScript -->
+            </div>
+        </aside>
+
+        <!-- CONTENT AREA (Khu vực làm việc chính) -->
+        <main class="content-area">
+            <!-- TABS NAVIGATION -->
+            <nav class="tab-nav no-print">
+                <button class="tab-btn active" data-tab="payslip" onclick="window.switchTab('payslip')">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <span>Phiếu lương</span>
+                </button>
+                <button class="tab-btn" data-tab="department" onclick="window.switchTab('department')">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+                    <span>Tổng hợp theo bộ phận</span>
+                </button>
+                <button class="tab-btn" data-tab="payroll" onclick="window.switchTab('payroll')">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                    <span>Bảng lương</span>
+                </button>
+                <button class="tab-btn" data-tab="audit" onclick="window.switchTab('audit')">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                    <span>Kiểm tra dữ liệu</span>
+                </button>
+            </nav>
+
+            <!-- TAB 1: PHIẾU LƯƠNG CHI TIẾT -->
+            <section class="tab-pane active" id="tab-payslip">
+                <div class="payslip-view-wrapper">
+                    <!-- TOOLBAR XUẤT VÀ IN -->
+                    <div class="toolbar no-print">
+                        <!-- HÀNG 1: XUẤT -->
+                        <div class="toolbar-row toolbar-row-top">
+                            <span class="toolbar-label">Xuất:</span>
+                            
+                            <!-- BỘ CHUYỂN ĐỔI CHẾ ĐỘ XUẤT (Segmented Switch trượt qua lại) -->
+                            <div class="segmented-export-switch" id="exportSwitch">
+                                <div class="seg-slider" id="segSlider"></div>
+                                <button type="button" class="seg-btn active" id="segBtnPrint" onclick="window.setExportMode('print')" title="In trực tiếp hoặc Lưu dưới dạng PDF qua hộp thoại in">
+                                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg> In / Lưu PDF
+                                </button>
+                                <button type="button" class="seg-btn" id="segBtnDownload" onclick="window.setExportMode('download')" title="Tải trực tiếp tệp .PDF về máy tính">
+                                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Tải PDF
+                                </button>
+                            </div>
+
+                            <!-- NÚT THỰC THI CHÍNH THEO CHẾ ĐỘ ĐANG CHỌN -->
+                            <button class="btn btn-sm btn-success" id="btnMainExportAction" onclick="window.executeCurrentExportAction()">
+                                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg> <span>In phiếu đang xem</span>
+                            </button>
+
+                            <button class="btn btn-sm btn-outline" id="btnAllExportAction" onclick="window.executeAllExportAction()">
+                                <svg class="icon-svg" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> <span id="btnAllExportText">In tất cả</span>
+                            </button>
+                        </div>
+
+                        <!-- HÀNG 2: XUỐNG BÊN DƯỚI XUẤT (2 khung viền riêng biệt) -->
+                        <div class="toolbar-row toolbar-row-bottom">
+                            <!-- KHUNG VIỀN NGOÀI 1: TỪ PHIẾU ... ĐẾN ... TẢI KHOẢNG -->
+                            <div class="toolbar-boxed-frame range-boxed-frame">
+                                <span class="range-label">Từ phiếu</span>
+                                <input type="number" id="rangeFrom" class="range-input" value="1" min="1" max="48">
+                                <span class="range-label">đến</span>
+                                <input type="number" id="rangeTo" class="range-input" value="10" min="1" max="48">
+                                <button class="btn btn-sm btn-outline" id="btnRangeExportAction" onclick="window.executeRangeExportAction()">
+                                    In khoảng
+                                </button>
+                            </div>
+
+                            <!-- KHUNG VIỀN NGOÀI 2: ĐIỀU KHIỂN THU PHÓNG (- VỪA KHUNG +) -->
+                            <div class="toolbar-boxed-frame zoom-boxed-frame">
+                                <div class="zoom-controls">
+                                    <button class="btn btn-sm btn-outline" onclick="window.zoomOut()" title="Thu nhỏ">-</button>
+                                    <button class="btn btn-sm btn-outline zoom-btn-fit" onclick="window.zoomFit()" title="Vừa khung">Vừa khung</button>
+                                    <button class="btn btn-sm btn-outline" onclick="window.zoomIn()" title="Phóng to">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- THÔNG BÁO HƯỚNG DẪN TƯƠNG ỨNG CHẾ ĐỘ XUẤT -->
+                    <div class="notice-banner no-print" id="exportNoticeBanner">
+                        <span class="icon">
+                            <svg class="icon-svg" viewBox="0 0 24 24" style="color: #b45309; width: 15px; height: 15px;"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+                        </span>
+                        <span id="exportNoticeText" style="flex: 1;">
+                            <strong>In / Lưu PDF chuẩn A4 nét nhất:</strong> Chọn <em>Save as PDF</em>, lề <em>None</em>. Dùng <em>↑ ↓</em> để chuyển người, <em>Enter</em> để in nhanh.
+                        </span>
+                        <button type="button" class="notice-close-btn" onclick="window.dismissNoticeBanner()" title="Đóng thông báo này">&times;</button>
+                    </div>
+
+                    <!-- VÙNG XEM TRƯỚC PHIẾU LƯƠNG TRÊN BÀN LÀM VIỆC -->
+                    <div class="paper-scroll-container">
+                        <div id="payslipContainer">
+                            <!-- Phiếu lương được chèn động từ payslip.js -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: TỔNG HỢP THEO BỘ PHẬN -->
+            <section class="tab-pane" id="tab-department">
+                <div id="deptTabContent" class="dept-scroll-pane">
+                    <!-- Nội dung tab phòng ban được chèn động từ department.js -->
+                </div>
+            </section>
+
+            <!-- TAB 3: BẢNG LƯƠNG TỔNG HỢP -->
+            <section class="tab-pane" id="tab-payroll">
+                <div id="payrollTabContent" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                    <!-- Nội dung bảng lương master được chèn động từ payroll-table.js -->
+                </div>
+            </section>
+
+            <!-- TAB 4: KIỂM TRA DỮ LIỆU -->
+            <section class="tab-pane" id="tab-audit">
+                <div id="auditTabContent" class="audit-scroll-pane">
+                    <!-- Nội dung kiểm toán được chèn động từ data-check.js -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- KHU VỰC IN ẨN DÀNH CHO IN HÀNG LOẠT (Chỉ hiển thị khi @media print) -->
+    <div id="batchPrintContainer" style="display: none;"></div>
+
+    <!-- MODAL 1: NẠP BẢNG LƯƠNG THÁNG MỚI -->
+    <div class="modal-overlay" id="importModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <svg class="icon-svg icon-svg-lg" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>Nạp Bảng Lương Tháng Mới (Excel / CSV)</span>
+                </h3>
+                <button class="modal-close-btn" onclick="window.closeImportModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 13px; color: #475569;">
+                    Hệ thống tự động nhận diện các cột: Mã nhân viên, Họ tên, Chức vụ, Lương cơ bản, Ngày công, Thưởng KPI, Phụ cấp, Bảo hiểm, Thuế TNCN...
+                </p>
+
+                <div class="drop-zone" id="fileDropZone">
+                    <div class="icon">
+                        <svg class="icon-svg" viewBox="0 0 24 24" style="width: 42px; height: 42px; color: #2563eb; stroke-width: 1.5;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><polyline points="12 11 12 17 12 11"/><polyline points="9 14 12 11 15 14"/></svg>
+                    </div>
+                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Kéo thả file Excel (.xlsx, .xls) hoặc CSV vào đây</div>
+                    <div style="font-size: 12px; color: #64748b;">hoặc bấm vào khung để chọn file từ máy tính</div>
+                    <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;">
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: #f1f5f9; border-radius: 6px;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 13px;">File mẫu</div>
+                        <div style="font-size: 11.5px; color: #64748b;">Tải về để điền dữ liệu theo đúng định dạng mẫu</div>
+                    </div>
+                    <button class="btn btn-sm btn-outline" onclick="window.downloadExcelTemplate()">
+                        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Tải file mẫu .xlsx
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="window.closeImportModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: XUẤT FILE CHUYỂN KHOẢN NGÂN HÀNG (TXT) -->
+    <div class="modal-overlay" id="bankExportModal">
+        <div class="modal-content" style="width: 720px;">
+            <div class="modal-header">
+                <h3>
+                    <svg class="icon-svg icon-svg-lg" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    <span>Xuất File Chuyển Khoản Ngân Hàng (TXT)</span>
+                </h3>
+                <button class="modal-close-btn" onclick="window.closeBankExportModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 12px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Ngân hàng thanh toán:</label>
+                        <select id="bankFormatSelect" class="filter-select" onchange="window.updateBankExportPreview()">
+                            <option value="BIDV">BIDV (Định dạng chi lương doanh nghiệp iBank)</option>
+                            <option value="VCB">Vietcombank (VCB Digibiz / CashUp)</option>
+                            <option value="TCB">Techcombank (Fast Payment Batch)</option>
+                            <option value="MB">MB Bank (Ủy nhiệm chi lương)</option>
+                            <option value="ALL">Chuẩn Bảng Kê Đầy Đủ (Tất cả ngân hàng)</option>
+                        </select>
+                    </div>
+                    <div style="width: 220px;">
+                        <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Lọc tài khoản ngân hàng:</label>
+                        <select id="bankFilterSelect" class="filter-select" onchange="window.updateBankExportPreview()">
+                            <option value="ALL">Tất cả ngân hàng</option>
+                            <option value="BIDV">Chỉ nhân viên mở tại BIDV</option>
+                            <option value="Vietcombank">Chỉ nhân viên mở tại Vietcombank</option>
+                            <option value="Techcombank">Chỉ nhân viên mở tại Techcombank</option>
+                            <option value="VietinBank">Chỉ nhân viên mở tại VietinBank</option>
+                            <option value="MB">Chỉ nhân viên mở tại MB Bank</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="bankExportSummary" style="font-size: 12.5px; background: #f8fafc; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    <!-- Thông tin tổng kết xuất ngân hàng -->
+                </div>
+
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Xem trước nội dung file TXT gửi ngân hàng:</label>
+                    <textarea id="bankExportPreview" readonly style="width: 100%; height: 210px; font-family: monospace; font-size: 12px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; outline: none; line-height: 1.4; resize: none; white-space: pre;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="window.closeBankExportModal()">Hủy</button>
+                <button class="btn btn-success" onclick="window.downloadBankExportTXT()">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Tải file TXT chi lương
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: CẤU HÌNH THÔNG TIN CÔNG TY -->
+    <div class="modal-overlay" id="companySettingsModal">
+        <div class="modal-content" style="width: 550px;">
+            <div class="modal-header">
+                <h3>
+                    <svg class="icon-svg icon-svg-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <span>Cấu Hình Thông Tin Công Ty & Kỳ Lương</span>
+                </h3>
+                <button class="modal-close-btn" onclick="window.closeCompanySettingsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Tên công ty:</label>
+                    <input type="text" id="settingCompName" class="filter-select" style="width: 100%;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Nhà máy sản xuất:</label>
+                    <input type="text" id="settingFactoryAddress" class="filter-select" style="width: 100%;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Showroom trưng bày:</label>
+                    <input type="text" id="settingShowroomAddress" class="filter-select" style="width: 100%;">
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Mã số thuế (MST):</label>
+                        <input type="text" id="settingCompTax" class="filter-select" style="width: 100%;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Hotline:</label>
+                        <input type="text" id="settingCompPhone" class="filter-select" style="width: 100%;">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Kỳ lương tháng (MM/YYYY):</label>
+                        <input type="text" id="settingSalaryMonth" class="filter-select" style="width: 100%;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Ngày chi trả lương:</label>
+                        <input type="text" id="settingPayDate" class="filter-select" style="width: 100%;">
+                    </div>
+                    <div style="width: 130px;">
+                        <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Ngày công chuẩn:</label>
+                        <input type="number" id="settingStandardDays" class="filter-select" style="width: 100%;" min="1" max="31">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">BHXH trừ lương (%):</label>
+                        <input type="number" id="settingRateBHXH" class="filter-select" style="width: 100%;" step="0.1" min="0" max="100" placeholder="8">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">BHYT trừ lương (%):</label>
+                        <input type="number" id="settingRateBHYT" class="filter-select" style="width: 100%;" step="0.1" min="0" max="100" placeholder="1.5">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">BHTN trừ lương (%):</label>
+                        <input type="number" id="settingRateBHTN" class="filter-select" style="width: 100%;" step="0.1" min="0" max="100" placeholder="1">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="window.closeCompanySettingsModal()">Hủy</button>
+                <button class="btn btn-primary" onclick="window.saveCompanySettings()">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- THƯ VIỆN BỔ TRỢ (Ưu tiên thư viện nội bộ libs, có fallback CDN) -->
+    <script src="libs/xlsx.full.min.js"></script>
+    <script>
+        if (typeof XLSX === 'undefined') {
+            document.write('<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"><\/script>');
+        }
+    </script>
+    <script src="libs/jszip.min.js"></script>
+    <script>
+        if (typeof JSZip === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"><\/script>');
+        }
+    </script>
+    <script src="libs/html2pdf.bundle.min.js"></script>
+    <script>
+        if (typeof html2pdf === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>');
+        }
+    </script>
+
+    <!-- LOGIC ỨNG DỤNG -->
+    <script src="js/vietnamese-number.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/payslip.js"></script>
+    <script src="js/department.js"></script>
+    <script src="js/payroll-table.js"></script>
+    <script src="js/data-check.js"></script>
+    <script src="js/bank-export.js"></script>
+    <script src="js/excel-importer.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
